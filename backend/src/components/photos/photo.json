@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_photos_photos",
+  "info": {
+    "displayName": "photo"
+  },
+  "options": {},
+  "attributes": {
+    "color": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "stock": {
+      "type": "integer"
+    },
+    "size": {
+      "type": "json"
+    }
+  },
+  "config": {}
+}

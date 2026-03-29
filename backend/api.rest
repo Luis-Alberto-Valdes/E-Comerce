@@ -1,0 +1,17 @@
+### Obtener datos de strapi
+GET http://localhost:1337/api/home?fields=titulo,description&populate[productos][fields]=link
+Authorization: Bearer fd4cb3d58a74c6ab3a2d93e2e09e8a131e558ec01f6c4233e101aeaefe57dde7be3a1853c1729dc255c5259e96e64a894b5172115f354b64422f387816807e44ceb6b18f06f2b9cbbe3a82955fbdb4500444732f1f24f853ea86161282f06e46d3036ffecb39546f353aa46e9e789590b52bf1d8425507cac5561ad5a1f2d0cd
+
+### Obtener datos de strapi
+GET http://localhost:1337/api/barra-de-navegacion?populate=*
+Authorization: Bearer fd4cb3d58a74c6ab3a2d93e2e09e8a131e558ec01f6c4233e101aeaefe57dde7be3a1853c1729dc255c5259e96e64a894b5172115f354b64422f387816807e44ceb6b18f06f2b9cbbe3a82955fbdb4500444732f1f24f853ea86161282f06e46d3036ffecb39546f353aa46e9e789590b52bf1d8425507cac5561ad5a1f2d0cd
+
+### Shopify
+POST https://test-shop-234576183295487458601.myshopify.com
+Content-Type: application/json
+
+{
+    "client_id": "23a646eb217b0c785162b935e8d810c1",
+    "client_secret": "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",
+    "code": "6fc7cb11-9fcb-443e-9e0a-3c035019525a"
+}

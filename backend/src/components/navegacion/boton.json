@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_navegacion_botons",
+  "info": {
+    "displayName": "boton"
+  },
+  "options": {},
+  "attributes": {
+    "link": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "config": {}
+}

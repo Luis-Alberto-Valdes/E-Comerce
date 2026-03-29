@@ -1,0 +1,28 @@
+{
+  "kind": "singleType",
+  "collectionName": "barra_de_navegacions",
+  "info": {
+    "singularName": "barra-de-navegacion",
+    "pluralName": "barra-de-navegacions",
+    "displayName": "barra de navegacion"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "logo": {
+      "type": "blocks"
+    },
+    "registrarce": {
+      "type": "component",
+      "component": "navegacion.boton",
+      "repeatable": false
+    },
+    "loguearse": {
+      "type": "component",
+      "component": "navegacion.boton",
+      "repeatable": false
+    }
+  }
+}
