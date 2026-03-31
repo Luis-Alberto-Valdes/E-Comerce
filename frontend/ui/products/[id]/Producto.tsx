@@ -2,13 +2,13 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useContext, useState } from 'react'
-import { ProductContext } from '@/context/PorductContext'
+import React, { useState } from 'react'
+import { useProduct } from '@/context/PorductContext'
 import styles from './page.module.css'
 import { ProductsData, Variants } from '@/types/strapiApiResponses'
 
 export default function Producto ({ id }: { id: string }) {
-  const { product } = useContext(ProductContext)
+  const { product } = useProduct()
   const selectProduct = product?.find((p: ProductsData) => p.slug === id)
   const [variant, setVariant] = useState<Variants>(selectProduct?.variants[0])
   const [loading, setLoading] = useState(true)
