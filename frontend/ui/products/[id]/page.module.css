@@ -74,6 +74,30 @@
   to { transform: rotate(360deg); }
 }
 
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 1.25rem;
+  color: var(--text-muted);
+}
+
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.notFound h1 {
+  font-size: 1.5rem;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
 .image {
   object-fit: contain;
   border-radius: 0;
@@ -189,10 +213,16 @@
   transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
-.button:hover {
+.button:hover:not(:disabled) {
   transform: translateY(-2px);
   opacity: 0.95;
   box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+.button:disabled {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  cursor: default;
+  transform: none;
 }
 
 .button:active {

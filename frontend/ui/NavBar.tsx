@@ -1,18 +1,17 @@
-import { getNavBarData } from "@/services/getComponentsFromStrapi";
-import Link from "next/link";
-import styles from "./navbar.module.css";
+import { getNavBarData } from '@/services/getComponentsFromStrapi'
+import Link from 'next/link'
+import CartIcon from './CartIcon'
+import styles from './navbar.module.css'
 
-export default async function NavBar() {
-    const {loguearse,registrarce,text} =await getNavBarData()
+export default async function NavBar () {
+  const { text } = await getNavBarData()
 
-
-    return (
-        <nav className={styles.nav}>
-            <h2 className={styles.logo}><Link href='/' className={styles.logoLink}>{text}</Link></h2>
-            <div className={styles.links}>
-                <Link href='/register' className={styles.link}>{registrarce.link}</Link>
-                <Link href='/login' className={styles.link}>{loguearse.link}</Link>
-            </div>
-        </nav>
-    )
+  return (
+    <nav className={styles.nav}>
+      <h2 className={styles.logo}><Link href='/' className={styles.logoLink}>{text}</Link></h2>
+      <div className={styles.links}>
+        <CartIcon />
+      </div>
+    </nav>
+  )
 }

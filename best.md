@@ -1,107 +1,265 @@
-# Análisis: Tu Enfoque vs URL Params
+# Implementación de Filtros - Next.js Best Practices
 
-## Tu Propuesta
+## Importante: La API no soporta filtros
 
-```
-page.tsx (Server Component)
-    ↓
-searchParams → ¿Hay filtros?
-    ↓ sí              ↓ no
-Hook filtra        Usa productos
-productos del      del context
-context            directamente
-    ↓
-Renderiza productos
-```
+**Problema:** La API de Strapi no tiene endpoints para filtrar productos.
 
-## Tu Código Propuesto
+**Solución:** Se traen todos los productos una vez (con cache) y se filtran en el servidor (Server Component).
+
+**Nota:** Aunque idealmente el filtrado debería ser en la API (para mejor SEO y performance), esta solución es funcional y usa cache para minimizar requests.
+
+---
+
+## Lo que se implementó
+
+### 1. Hook `useFilters` (`frontend/hooks/useFilters.ts`)
 
 ```typescript
-// hook/useProductFilters.ts
-export function useProductFilters(products, filters) {
-  return products.filter(product => {
-    // Lógica de filtrado
-  });
-}
+'use client';
 
-// page.tsx
-export default async function ProductsPage({ searchParams }) {
-  const { products } = useProduct(); // Del context
-  const params = await searchParams;
-  
-  // Si hay filtros, usa el hook
-  const filteredProducts = hasFilters(params) 
-    ? useProductFilters(products, params)
-    : products;
-  
-  return <ProductGrid products={filteredProducts} />;
-}
-```
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useCallback, useTransition } from 'react';
 
-## ⚠️ Problemas con Tu Enfoque
-
-| Problema | Descripción |
-|----------|-------------|
-| **Server Component + Hook con estado** | No puedes usar hooks directamente en Server Components |
-| **Filtrado en cliente** | Estarías filtrando en el navegador, no en el servidor |
-| **Datos innecesarios** | Traerías TODOS los productos aunque只看 1 categoría |
-| **Sin cache por filtro** | Cada vez se filtran los mismos productos en cliente |
-| **No es SSR** | El usuario ve todos los productos antes de filtrar |
-
-## Mi Recomendación: Filtrar en el Servidor
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  page.tsx (Server Component)                                      │
-│                                                                  │
-│  searchParams ──→ getFilteredProducts(params) ──→ Fetch filtrado  │
-│                      ↑                                           │
-│                      │                                           │
-│              /api/products?category=camisa                       │
-│              (Devuelve SOLO las camisas)                        │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Ventajas:**
-- Solo traes los datos que necesitas
-- SSR completo (Google ve los productos filtrados)
-- Cache automático por query string
-- Mejor performance
-
-## Si Insistes en Filtrar en Cliente
-
-Usa el hook **SÓLO para UI** (mostrar qué filtro está activo), no para filtrar los datos:
-
-```typescript
-// hook/useFilters.ts (CORRECTO)
 export function useFilters() {
   const searchParams = useSearchParams();
-  
-  return {
-    filters: {
-      category: searchParams.get('category'),
-      maxPrice: searchParams.get('maxPrice'),
-      search: searchParams.get('search'),
-    }
-  };
-}
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
 
-// page.tsx (Server Component)
-export default async function ProductsPage({ searchParams }) {
-  // Fetch con filtros DESDE EL SERVIDOR
-  const products = await getFilteredProducts(await searchParams);
-  
-  return <ProductGrid products={products} />;
+  const filters = {
+    search: searchParams.get('search') || '',
+    category: searchParams.get('category') || '',
+    maxPrice: searchParams.get('maxPrice') || '',
+  };
+
+  const setFilter = useCallback((key: keyof Filters, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    value ? params.set(key, value) : params.delete(key);
+    
+    startTransition(() => {
+      const queryString = params.toString();
+      router.push(queryString ? `${pathname}?${queryString}` : pathname);
+    });
+  }, [searchParams, pathname, router]);
+
+  const clearFilters = useCallback(() => {
+    startTransition(() => {
+      router.push(pathname);
+    });
+  }, [pathname, router]);
+
+  const hasActiveFilters = Object.values(filters).some(v => v !== '');
+
+  return {
+    filters,
+    setFilter,
+    clearFilters,
+    hasActiveFilters,
+    isPending,
+  };
 }
 ```
 
-## Resumen
+**Características:**
+- Lee filtros de URL con `useSearchParams`
+- Actualiza URL con `useRouter.push`
+- Usa `useTransition` para UI responsiva
+- Proporciona `isPending` para feedback visual
 
-| Enfoque | Filtrado en | SSR | SEO | Performance |
-|---------|-------------|-----|-----|-------------|
-| **Tu propuesta** | Cliente | ❌ | ❌ | ❌ |
-| **URL Params (recomendado)** | Servidor | ✅ | ✅ | ✅ |
+---
 
-**Veredicto:** Tu enfoque filtrar en cliente es **peor** para SEO y performance. El filtrado debe ser en el servidor usando URL params.
+### 2. Función de Fetch `getProducts` + `filterProducts` (`frontend/lib/products.ts`)
 
-¿Quieres que te muestre cómo implementar el enfoque correcto paso a paso?
+```typescript
+import { cache } from 'react';
+import { ProductsData } from '@/types/strapiApiResponses';
+
+export const getProducts = cache(async (): Promise<ProductsData[]> => {
+  // Trae TODOS los productos
+  const res = await fetch(`${STRAPI_URL}products?populate=*`, {
+    next: { revalidate: 60 }
+  });
+
+  return normalizeProducts(data.data);
+});
+
+export function filterProducts(products: ProductsData[], filters: ProductFilters): ProductsData[] {
+  let filtered = [...products];
+
+  // Filtra por categoría
+  if (filters.category) {
+    filtered = filtered.filter(p => 
+      p.categorie.toLowerCase() === filters.category!.toLowerCase()
+    );
+  }
+
+  // Filtra por búsqueda
+  if (filters.search) {
+    const searchTerm = filters.search.toLowerCase();
+    filtered = filtered.filter(p => 
+      p.title.toLowerCase().includes(searchTerm) ||
+      p.description.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  // Filtra por precio máximo
+  if (filters.maxPrice) {
+    const maxPrice = parseFloat(filters.maxPrice);
+    if (!isNaN(maxPrice)) {
+      filtered = filtered.filter(p => p.price <= maxPrice);
+    }
+  }
+
+  return filtered;
+}
+```
+
+**Características:**
+- `getProducts()`: Trae todos los productos con cache
+- `filterProducts()`: Filtra en memoria
+- ISR con revalidate cada 60 segundos
+- Los productos se cachean, el filtrado es rápido
+
+---
+
+### 3. Page como Server Component (`frontend/app/products/page.tsx`)
+
+```typescript
+import { getProducts, filterProducts, ProductFilters } from '@/lib/products';
+
+export default async function ProductsPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  
+  // 1. Obtener todos los productos (cached)
+  const allProducts = await getProducts();
+  
+  // 2. Filtrar en el servidor
+  const filters: ProductFilters = {
+    search: params.search,
+    category: params.category,
+    maxPrice: params.maxPrice,
+  };
+  const products = filterProducts(allProducts, filters);
+
+  return (
+    <main>
+      <Suspense fallback={<FilterSkeleton />}>
+        <FilterSidebar />
+      </Suspense>
+      <ProductGrid products={products} />
+    </main>
+  );
+}
+```
+
+**Características:**
+- Server Component (sin 'use client')
+- Recibe `searchParams` como Promise
+- Trae productos una vez, filtra múltiples veces
+- Envuelve componentes con `useSearchParams` en Suspense
+
+---
+
+### 4. Componentes de UI
+
+#### FilterSidebar (`frontend/ui/products/FilterSidebar.tsx`)
+- Client Component
+- Usa `useFilters()` hook
+- Muestra filtros actuales
+- Botón "Limpiar" condicional
+
+#### FilterDrawer (`frontend/ui/products/FilterDrawer.tsx`)
+- Client Component
+- Para mobile (drawer desde la izquierda)
+- Usa `useFilters()` hook
+
+#### FilterMobile (`frontend/ui/products/FilterMobile.tsx`)
+- Client Component
+- Maneja estado del drawer
+- Renderiza FilterToggle + FilterDrawer
+
+#### FilterSkeleton (`frontend/ui/products/FilterSkeleton.tsx`)
+- Skeleton loading para Suspense
+
+---
+
+## Flujo Completo
+
+```
+1. Usuario toca "Camisa"
+   ↓
+2. useFilters.setFilter('category', 'camisa')
+   ↓
+3. router.push('/products?category=camisa')
+   ↓
+4. URL cambia → Next.js detecta
+   ↓
+5. Server Component se re-renderiza
+   ↓
+6. getProducts() → trae todos (cached)
+   ↓
+7. filterProducts(allProducts, { category: 'camisa' })
+   ↓
+8. ProductGrid renderiza productos filtrados
+```
+
+---
+
+## Estructura de Archivos
+
+```
+frontend/
+├── app/
+│   └── products/
+│       └── page.tsx          ← Server Component
+├── hooks/
+│   └── useFilters.ts         ← Hook para filtros
+├── lib/
+│   └── products.ts           ← getProducts() + filterProducts()
+└── ui/
+    └── products/
+        ├── FilterSidebar.tsx     ← Desktop
+        ├── FilterDrawer.tsx      ← Mobile
+        ├── FilterMobile.tsx      ← Wrapper mobile
+        ├── FilterToggle.tsx      ← Botón mobile
+        └── FilterSkeleton.tsx     ← Loading state
+```
+
+---
+
+## Beneficios
+
+| Aspecto | Beneficio |
+|---------|-----------|
+| **SEO** | URLs indexables: `/products?category=camisa` |
+| **SSR** | HTML completo desde el servidor |
+| **Cache** | Productos cacheados con `cache()` |
+| **UX** | useTransition + isPending |
+| **Shareable** | URL compartible |
+| **Responsive** | Sidebar en desktop, drawer en mobile |
+
+---
+
+## URLs de Ejemplo
+
+```
+/products                           ← Sin filtros
+/products?category=camisa           ← Filtrado por categoría
+/products?maxPrice=500              ← Filtrado por precio
+/products?search=rojo               ← Búsqueda
+/products?category=camisa&maxPrice=500 ← Combinado
+```
+
+---
+
+## Para Mejorar (Futuro)
+
+Si Strapi se configura para soportar filtros:
+
+1. Agregar endpoint `/api/products?filters[category][$eq]=camisa`
+2. Modificar `getProducts()` para pasar filtros directamente a Strapi
+3. Filtrado en servidor (API) en lugar de en memoria
+
+Esto mejoraría:
+- Performance (menos datos transferidos)
+- SEO (Google recibiría HTML filtrado directamente)

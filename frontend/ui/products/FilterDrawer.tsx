@@ -1,32 +1,34 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import styles from './FilterDrawer.module.css'
+import { useState, useEffect } from 'react';
+import { useFilterValues } from '@/hooks/useFilters';
+import styles from './FilterDrawer.module.css';
 
 const categories = [
   { label: 'Todas', value: '' },
   { label: 'Camisa', value: 'camisa' },
   { label: 'Pantalon', value: 'pantalon' },
   { label: 'Guantes', value: 'guantes' },
-]
+];
 
 interface FilterDrawerProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export default function FilterDrawer({ onClose }: FilterDrawerProps) {
-  const [hasMounted, setHasMounted] = useState(false)
+  const [hasMounted, setHasMounted] = useState(false);
+  const { filters, setFilter, clearFilters, hasActiveFilters } = useFilterValues();
 
   useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   return (
     <>
@@ -67,6 +69,8 @@ export default function FilterDrawer({ onClose }: FilterDrawerProps) {
                 id="search"
                 name="search"
                 placeholder="Buscar productos..."
+                value={filters.search}
+                onChange={(e) => setFilter('search', e.target.value)}
                 className={styles.searchInput}
               />
             </div>
@@ -77,7 +81,14 @@ export default function FilterDrawer({ onClose }: FilterDrawerProps) {
             <div className={styles.radioGroup}>
               {categories.map((category) => (
                 <label key={category.value} className={styles.radioLabel}>
-                  <input type="radio" name="category" value={category.value} className={styles.radio} />
+                  <input
+                    type="radio"
+                    name="category"
+                    value={category.value}
+                    checked={filters.category === category.value}
+                    onChange={() => setFilter('category', category.value)}
+                    className={styles.radio}
+                  />
                   <span className={styles.radioMark} />
                   <span className={styles.labelText}>{category.label}</span>
                 </label>
@@ -95,31 +106,32 @@ export default function FilterDrawer({ onClose }: FilterDrawerProps) {
                 name="maxPrice"
                 min="0"
                 placeholder="Ej: 500"
+                value={filters.maxPrice}
+                onChange={(e) => setFilter('maxPrice', e.target.value)}
                 className={styles.priceInput}
               />
-            </div>
-            <div className={styles.priceRange}>
-              <input
-                type="range"
-                min="0"
-                max="1000"
-                defaultValue="1000"
-                className={styles.rangeSlider}
-                aria-label="Precio máximo"
-              />
-              <div className={styles.rangeLabels}>
-                <span>$0</span>
-                <span>$1000</span>
-              </div>
             </div>
           </div>
         </div>
 
         <footer className={styles.footer}>
-          <button type="button" className={styles.clearBtn}>Limpiar todo</button>
-          <button type="button" className={styles.applyBtn} onClick={onClose}>Ver resultados</button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className={styles.clearBtn}
+            disabled={!hasActiveFilters}
+          >
+            Limpiar
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className={styles.applyBtn}
+          >
+            Ver resultados
+          </button>
         </footer>
       </aside>
     </>
-  )
+  );
 }

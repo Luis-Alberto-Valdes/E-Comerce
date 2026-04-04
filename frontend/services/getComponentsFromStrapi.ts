@@ -37,20 +37,56 @@ export const getNavBarData = async ():Promise<NavBarData> => {
   }
 }
 
-export const getProductData = async ():Promise<ProductsData[]> => {
+export const getProductData = async ():Promise<ProductsData[] | null> => {
   try {
-    const data = await query('products?populate=*')
+    const data = await query('product-shopifies?populate=*')
 
-    const products:ProductsData[] = data.data.map((prod:ProductsData) => {
-      const { title, price, slug, shopifyID, variants } = prod
-      const description = prod.description[0].children[0].text
-      const categorie = prod.categorie.categorieName
+    if (!data.data || !Array.isArray(data.data)) {
+      return []
+    }
 
-      return { title, price, slug, shopifyID, description, categorie, variants }
+    const products:ProductsData[] = data.data.map((prod) => {
+      const product = prod.product
+      const { title, description } = product
+      const price = parseFloat(product.priceRangeV2.maxVariantPrice.amount)
+      const variants = product.variants.nodes.map((variant) => {
+        const slug = variant.id
+        const [color, size] = variant.title.split(' / ')
+        const image = variant.image.url
+
+        return { slug, color, size, image }
+      })
+
+      return { price, title, description, variants, product }
     })
+    console.log(products)
+    console.log(data)
 
     return products
   } catch (e) {
-    return e
+    console.error('Error fetching products:', e)
+    return []
   }
+}
+
+export const getShopifyProductsData = async () => {
+  const data = await query('product-shopifies?populate=*')
+  const products:ProductsData[] = data.data.map((prod) => {
+    const product = prod.product
+    const { title, description } = product
+    const price = parseFloat(product.priceRangeV2.maxVariantPrice.amount)
+    const variants = product.variants.nodes.map((variant) => {
+      const slug = variant.id
+      const [color, size] = variant.title.split(' / ')
+      const image = variant.image.url
+
+      return { slug, color, size, image }
+    })
+
+    return { price, title, description, variants, product }
+  })
+  console.log(products)
+  console.log(data)
+
+  return data
 }

@@ -172,9 +172,14 @@
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-.addButton:hover {
+.addButton:hover:not(:disabled) {
   transform: translateY(-1px);
   opacity: 0.95;
+}
+
+.addButton:disabled {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  cursor: default;
 }
 
 .addButton:focus-visible {

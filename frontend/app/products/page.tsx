@@ -1,16 +1,24 @@
-'use client'
-import Producto from '@/ui/products/Product'
-import styles from './page.module.css'
-import { Suspense, useState } from 'react'
-import { useProduct } from '@/context/PorductContext'
-import { ProductsData } from '@/types/strapiApiResponses'
+import { Suspense } from 'react'
 import FilterSidebar from '@/ui/products/FilterSidebar'
-import FilterToggle from '@/ui/products/FilterToggle'
-import FilterDrawer from '@/ui/products/FilterDrawer'
+import FilterMobile from '@/ui/products/FilterMobile'
+import FilterSkeleton from '@/ui/products/FilterSkeleton'
+import ProductSkeleton from '@/ui/products/ProductSkeleton'
+import ProductGrid from '../../ui/products/ProductGrid'
+import { getProductData } from '@/services/getComponentsFromStrapi'
+import styles from './page.module.css'
 
-export default function Productos () {
-  const { product } = useProduct()
-  const [drawerOpen, setDrawerOpen] = useState(false)
+function MobileFilterHeader () {
+  return (
+    <div className={styles.mobileHeader}>
+      <Suspense fallback={<div className={styles.filterTogglePlaceholder} />}>
+        <FilterMobile />
+      </Suspense>
+    </div>
+  )
+}
+
+export default async function ProductsPage () {
+  const products = await getProductData()
 
   return (
     <main className={styles.page}>
@@ -20,38 +28,16 @@ export default function Productos () {
       </section>
 
       <div className={styles.content}>
-        <FilterSidebar />
+        <Suspense fallback={<FilterSkeleton />}>
+          <FilterSidebar />
+        </Suspense>
 
         <section className={styles.main}>
-          <div className={styles.mobileHeader}>
-            <FilterToggle onClick={() => setDrawerOpen(true)} />
-          </div>
-
-          <div className={styles.grid}>
-            <Suspense fallback={<ProductsSkeleton />}>
-              {product?.map((product: ProductsData) => (
-                <div key={product.slug} className={styles.productItem}>
-                  <Producto props={product} />
-                </div>
-              ))}
-            </Suspense>
-          </div>
+          <Suspense fallback={<ProductSkeleton />}>
+            <ProductGrid products={products} />
+          </Suspense>
         </section>
       </div>
-
-      {drawerOpen && <FilterDrawer onClose={() => setDrawerOpen(false)} />}
     </main>
-  )
-}
-
-function ProductsSkeleton () {
-  return (
-    <>
-      {[...Array(6)].map((_, i) => (
-        <div key={i} className='animate-pulse'>
-          <div className='h-80 bg-gray-200 rounded-2xl' />
-        </div>
-      ))}
-    </>
   )
 }

@@ -516,6 +516,36 @@ export interface ApiPhotoPhoto extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiProductShopifyProductShopify
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'product_shopifies';
+  info: {
+    displayName: 'productShopify';
+    pluralName: 'product-shopifies';
+    singularName: 'product-shopify';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::product-shopify.product-shopify'
+    > &
+      Schema.Attribute.Private;
+    product: Schema.Attribute.JSON &
+      Schema.Attribute.CustomField<'plugin::shopify.product'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   collectionName: 'products';
   info: {
@@ -1164,6 +1194,7 @@ declare module '@strapi/strapi' {
       'api::barra-de-navegacion.barra-de-navegacion': ApiBarraDeNavegacionBarraDeNavegacion;
       'api::home.home': ApiHomeHome;
       'api::photo.photo': ApiPhotoPhoto;
+      'api::product-shopify.product-shopify': ApiProductShopifyProductShopify;
       'api::product.product': ApiProductProduct;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

@@ -5,10 +5,17 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
         enabled:true,
         config:{
            host:'https://test-shop-234576183295487458601.myshopify.com',
-           encryptionKey: 'mi_clave_super_secreta_de_64_caracteres_para_shopify_123456',
-           apiKey: '23a646eb217b0c785162b935e8d810c1',
-           apiSecret: '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',
-           scopes: ['read_products', 'read_inventory']
+           encryptionKey: '12345678912345678912345678912345',
+           apiAccessToken:'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',
+           shopName:'test-shop-234576183295487458601.myshopify.com',
+           variantFields: [
+        'id',
+        'title',
+        'displayName',
+        'price',
+        'inventoryQuantity', // Campo directo de stock (según versión API)
+        'inventoryItem { id tracked }', // Para verificar si el producto tiene seguimiento
+      ]
         }
     }
 });

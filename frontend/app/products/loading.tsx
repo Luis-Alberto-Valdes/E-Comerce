@@ -1,7 +1,9 @@
-export default function Loading () {
+import ProductSkeleton from '@/ui/products/ProductSkeleton'
+
+export default async function Loading () {
   return (
     <div>
-      Cargando
+      <ProductSkeleton />
     </div>
   )
 }
