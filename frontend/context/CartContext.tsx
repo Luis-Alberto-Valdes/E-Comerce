@@ -28,7 +28,7 @@ export const useCartStore = create<CartState>()(
       items: [],
 
       addItem: (item) => {
-        const sizeStr = item.variant.size ? `-${item.variant.size.join('-')}` : ''
+        const sizeStr = item.variant.size ? `-${item.variant.size}` : ''
         const itemId = `${item.slug}-${item.variant.color}${sizeStr}`
         const existingItem = get().items.find(i => i.id === itemId)
 

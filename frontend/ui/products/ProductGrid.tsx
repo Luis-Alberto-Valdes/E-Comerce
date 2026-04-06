@@ -20,7 +20,7 @@ function ProductGridContent ({ products }: { products: ProductsData[] }) {
     <>
       <div className={styles.mobileHeader}>
         <Suspense fallback={<div className={styles.filterTogglePlaceholder} />}>
-          <FilterMobile />
+          <FilterMobile products={products} />
         </Suspense>
         <span className={styles.resultCount}>
           {filteredProducts.length} productos
@@ -31,7 +31,7 @@ function ProductGridContent ({ products }: { products: ProductsData[] }) {
         <Suspense fallback={<ProductSkeleton />}>
           {filteredProducts.length > 0
             ? filteredProducts.map((product) => (
-              <div key={product.slug} className={styles.productItem}>
+              <div key={product.variants[0]?.slug || product.title} className={styles.productItem}>
                 <Producto props={product} />
               </div>
             ))

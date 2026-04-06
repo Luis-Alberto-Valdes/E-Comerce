@@ -194,6 +194,11 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
+.sizeOptions:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .stock {
   font-size: 0.9rem;
   color: var(--text-muted);

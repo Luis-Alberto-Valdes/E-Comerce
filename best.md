@@ -263,3 +263,6 @@ Si Strapi se configura para soportar filtros:
 Esto mejoraría:
 - Performance (menos datos transferidos)
 - SEO (Google recibiría HTML filtrado directamente)
+
+
+

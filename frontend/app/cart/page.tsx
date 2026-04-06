@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCartStore } from '@/context/CartContext'
+import { useState } from 'react'
 import styles from './page.module.css'
 
 export default function CartPage () {
@@ -10,11 +11,49 @@ export default function CartPage () {
   const removeItem = useCartStore(state => state.removeItem)
   const updateQuantity = useCartStore(state => state.updateQuantity)
   const clearCart = useCartStore(state => state.clearCart)
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
 
   const totalItems = items.reduce((total, item) => total + item.quantity, 0)
   const totalPrice = items.reduce((total, item) => total + (item.price * item.quantity), 0)
 
   const formatPrice = (price: number) => `$${price.toFixed(2)}`
+
+  const handleCheckout = async () => {
+    setIsCheckingOut(true)
+    try {
+      console.log('=== CLIENT CHECKOUT START ===')
+      console.log('Cart items:', JSON.stringify(items, null, 2))
+
+      const lineItems = items.map(item => ({
+        variantId: item.variant.slug,
+        quantity: item.quantity,
+      }))
+
+      console.log('Line items to send:', JSON.stringify(lineItems, null, 2))
+
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lineItems }),
+      })
+
+      console.log('Response status:', res.status)
+
+      const data = await res.json()
+      console.log('Response data:', JSON.stringify(data, null, 2))
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al crear el checkout')
+      }
+
+      console.log('Opening invoice in new tab:', data.invoiceUrl)
+      window.open(data.invoiceUrl, '_blank')
+      setIsCheckingOut(false)
+    } catch (error) {
+      console.error('Checkout error:', error)
+      setIsCheckingOut(false)
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -64,7 +103,7 @@ export default function CartPage () {
                   <h3 className={styles.itemTitle}>{item.title}</h3>
                   <p className={styles.itemVariant}>
                     {item.variant.color}
-                    {item.variant.size && ` / ${item.variant.size.join(', ')}`}
+                    {item.variant.size && ` / ${item.variant.size}`}
                   </p>
                   <p className={styles.itemPrice}>${item.price.toFixed(2)}</p>
 
@@ -129,8 +168,13 @@ export default function CartPage () {
               >
                 Limpiar carrito
               </button>
-              <button type='button' className={styles.buyBtn}>
-                Proceder al Checkout
+              <button 
+                type='button' 
+                className={styles.buyBtn}
+                onClick={handleCheckout}
+                disabled={isCheckingOut}
+              >
+                {isCheckingOut ? 'Procesando...' : 'Proceder al Checkout'}
               </button>
             </div>
           </aside>

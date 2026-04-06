@@ -16,19 +16,16 @@ export type NavBarData = {
 }
 
 export type Variants = {
-  id: number,
-  url: string,
-  stock: number,
+  slug: string,
+  image: string,
   color: string,
-  size?: string[]
+  size?: string
 }
 
 export type ProductsData = {
   title: string,
   price: number,
-  slug: string,
-  shopifyID: string,
   description: string,
-  categorie: string,
-  variants: Variants[] | Variants
+  category: string,
+  variants: Variants[]
 }

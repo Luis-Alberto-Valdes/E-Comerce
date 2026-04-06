@@ -4,29 +4,47 @@ import styles from './Product.module.css'
 import Link from 'next/link'
 import { ProductsData, Variants } from '@/types/strapiApiResponses'
 import { useCartStore } from '@/context/CartContext'
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 
 export default function Producto ({ props }: { props: ProductsData }) {
-  const { title, price, slug, description, categorie, variants } = props
-  const variantsArray: Variants[] = Array.isArray(variants) ? variants : [variants]
-  const [selectedColor, setSelectedColor] = useState(variantsArray[0].color)
-  const [selectedSize, setSelectedSize] = useState<string | null>(
-    variantsArray[0].size?.[0] || null
-  )
+  const { title, price, description, category, variants } = props
+  const productSlug = variants[0]?.slug || title.toLowerCase().replace(/\s+/g, '-')
+  const [selectedColor, setSelectedColor] = useState(variants[0].color)
+  const [selectedSize, setSelectedSize] = useState<string | null>(variants[0].size || null)
   const [loading, setLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
   const addItem = useCartStore(state => state.addItem)
 
-  const currentVariant = variantsArray.find(v => v.color === selectedColor) || variantsArray[0]
+  const uniqueColors = useMemo(() => {
+    const seen = new Set<string>()
+    return variants.filter(v => {
+      if (seen.has(v.color)) return false
+      seen.add(v.color)
+      return true
+    })
+  }, [variants])
+
+  const uniqueSizes = useMemo(() => {
+    return variants
+      .filter(v => v.color === selectedColor && v.size)
+      .map(v => v.size!)
+      .filter((size, index, arr) => arr.indexOf(size) === index)
+  }, [variants, selectedColor])
+
+  const imageVariant = useMemo(() => {
+    return variants.find(v => v.color === selectedColor) || variants[0]
+  }, [variants, selectedColor])
+
+  const cartVariant = useMemo(() => {
+    return variants.find(v => v.color === selectedColor && v.size === selectedSize) || variants.find(v => v.color === selectedColor) || variants[0]
+  }, [variants, selectedColor, selectedSize])
 
   const handleColorChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newColor = event.target.value
     setSelectedColor(newColor)
-    const newVariant = variantsArray.find(v => v.color === newColor)
-    if (newVariant?.size?.[0]) {
-      setSelectedSize(newVariant.size[0])
-    } else {
-      setSelectedSize(null)
+    const sizesForColor = variants.filter(v => v.color === newColor && v.size).map(v => v.size!)
+    if (sizesForColor.length > 0) {
+      setSelectedSize(sizesForColor[0])
     }
     setLoading(true)
   }
@@ -37,27 +55,27 @@ export default function Producto ({ props }: { props: ProductsData }) {
 
   const handleAddToCart = () => {
     if (isAdding) return
-    
+
     setIsAdding(true)
     addItem({
-      slug,
+      slug: productSlug,
       title,
       price,
       quantity: 1,
-      variant: { ...currentVariant, size: selectedSize ? [selectedSize] : currentVariant.size },
-      image: currentVariant.url
+      variant: cartVariant,
+      image: cartVariant.image
     })
-    
+
     setTimeout(() => setIsAdding(false), 600)
   }
 
   return (
-    <article className={styles.card} aria-labelledby={`product-title-${slug}`}>
-      <Link className={styles.productLink} href={`/products/${slug}`}>
+    <article className={styles.card} aria-labelledby={`product-title-${productSlug}`}>
+      <Link className={styles.productLink} href={`/products/${productSlug}`}>
         <div className={styles.imageWrapper}>
           {loading && <div className={styles.loadingPlaceholder} />}
           <Image
-            src={currentVariant.url}
+            src={imageVariant.image}
             alt={title}
             fill
             className={styles.productImage}
@@ -70,49 +88,48 @@ export default function Producto ({ props }: { props: ProductsData }) {
 
       <section className={styles.content}>
         <div className={styles.titleBar}>
-          <h3 id={`product-title-${slug}`} className={styles.title}>{title}</h3>
-          <span className={styles.category}>{categorie}</span>
+          <h3 id={`product-title-${productSlug}`} className={styles.title}>{title}</h3>
+          <span className={styles.category}>{category}</span>
         </div>
 
         <p className={styles.description}>{description}</p>
 
         <div className={styles.meta}>
-          <span className={styles.price}>${price.toFixed(2)}</span>
+          <span className={styles.price}>Precio:  ${price.toFixed(2)}</span>
         </div>
 
         <div className={styles.selectorRow}>
-          <label htmlFor={`color-${slug}`} className='sr-only'>Color</label>
+          <label htmlFor={`color-${productSlug}`} className='sr-only'>Color</label>
           <select
             onChange={handleColorChange}
-            id={`color-${slug}`}
+            id={`color-${productSlug}`}
             name='color'
             className={styles.selector}
             value={selectedColor}
           >
-            {variantsArray.map((v: Variants) => (
-              <option key={v.id} value={v.color}>{v.color}</option>
+            {uniqueColors.map((v: Variants) => (
+              <option key={v.slug} value={v.color}>{v.color}</option>
             ))}
           </select>
 
-          <label htmlFor={`size-${slug}`} className='sr-only'>Talla</label>
-          <select 
-            id={`size-${slug}`} 
-            name='size' 
+          <label htmlFor={`size-${productSlug}`} className='sr-only'>Talla</label>
+          <select
+            onChange={handleSizeChange}
+            id={`size-${productSlug}`}
+            name='size'
             className={styles.selector}
             value={selectedSize || ''}
-            onChange={handleSizeChange}
+            disabled={uniqueSizes.length <= 1}
           >
-            {currentVariant.size != null && currentVariant.size.length > 0
-              ? currentVariant.size.map((s: string, index: number) => (
-                <option key={index} value={s}>{s}</option>
-              ))
-              : <option value=''>Sin talla</option>}
+            {uniqueSizes.map((size, index) => (
+              <option key={index} value={size}>{size}</option>
+            ))}
           </select>
         </div>
 
         <div className={styles.action}>
-          <button 
-            type='button' 
+          <button
+            type='button'
             className={styles.addButton}
             onClick={handleAddToCart}
             disabled={isAdding}

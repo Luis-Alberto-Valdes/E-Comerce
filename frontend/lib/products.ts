@@ -11,7 +11,7 @@ export function filterProducts (products: ProductsData[], filters: ProductFilter
 
   if (filters.category) {
     filtered = filtered.filter(p =>
-      p.categorie.toLowerCase() === filters.category!.toLowerCase()
+      p.category.toLowerCase() === filters.category!.toLowerCase()
     )
   }
 

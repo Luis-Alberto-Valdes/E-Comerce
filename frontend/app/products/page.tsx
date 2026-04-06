@@ -29,7 +29,7 @@ export default async function ProductsPage () {
 
       <div className={styles.content}>
         <Suspense fallback={<FilterSkeleton />}>
-          <FilterSidebar />
+          <FilterSidebar products={products} />
         </Suspense>
 
         <section className={styles.main}>

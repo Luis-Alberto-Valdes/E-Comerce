@@ -2,22 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useFilterValues } from '@/hooks/useFilters';
+import { ProductsData } from '@/types/strapiApiResponses';
 import styles from './FilterDrawer.module.css';
 
-const categories = [
-  { label: 'Todas', value: '' },
-  { label: 'Camisa', value: 'camisa' },
-  { label: 'Pantalon', value: 'pantalon' },
-  { label: 'Guantes', value: 'guantes' },
-];
-
 interface FilterDrawerProps {
+  products: ProductsData[] | null;
   onClose: () => void;
 }
 
-export default function FilterDrawer({ onClose }: FilterDrawerProps) {
+export default function FilterDrawer({ products, onClose }: FilterDrawerProps) {
   const [hasMounted, setHasMounted] = useState(false);
-  const { filters, setFilter, clearFilters, hasActiveFilters } = useFilterValues();
+  const { filters, setFilter, clearFilters, hasActiveFilters, uniqueCategories } = useFilterValues({ products: products || [] });
 
   useEffect(() => {
     setHasMounted(true);
@@ -79,18 +74,30 @@ export default function FilterDrawer({ onClose }: FilterDrawerProps) {
           <div className={styles.section}>
             <h3 className={styles.sectionTitle}>Categoría</h3>
             <div className={styles.radioGroup}>
-              {categories.map((category) => (
-                <label key={category.value} className={styles.radioLabel}>
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="category"
+                  value=""
+                  checked={filters.category === ''}
+                  onChange={() => setFilter('category', '')}
+                  className={styles.radio}
+                />
+                <span className={styles.radioMark} />
+                <span className={styles.labelText}>Todas</span>
+              </label>
+              {uniqueCategories.map((category) => (
+                <label key={category} className={styles.radioLabel}>
                   <input
                     type="radio"
                     name="category"
-                    value={category.value}
-                    checked={filters.category === category.value}
-                    onChange={() => setFilter('category', category.value)}
+                    value={category}
+                    checked={filters.category === category}
+                    onChange={() => setFilter('category', category)}
                     className={styles.radio}
                   />
                   <span className={styles.radioMark} />
-                  <span className={styles.labelText}>{category.label}</span>
+                  <span className={styles.labelText}>{category}</span>
                 </label>
               ))}
             </div>

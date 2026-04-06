@@ -6,7 +6,7 @@ import { filterProducts, ProductFilters } from '@/lib/products'
 import { ProductsData } from '@/types/strapiApiResponses'
 
 const SCROLL_POSITION_KEY = 'products_scroll_position'
-const DEBOUNCE_DELAY = 500
+const DEBOUNCE_DELAY = 100
 
 export function useFilters ({ products }: { products: ProductsData[] }) {
   const searchParams = useSearchParams()
@@ -103,6 +103,15 @@ export function useFilters ({ products }: { products: ProductsData[] }) {
 
   const hasActiveFilters = Object.values(filters).some(v => v !== '')
 
+  const uniqueCategories = useMemo(() => {
+    const seen = new Set<string>()
+    return products.filter(p => {
+      if (seen.has(p.category)) return false
+      seen.add(p.category)
+      return true
+    }).map(p => p.category)
+  }, [products])
+
   return {
     filters,
     filteredProducts,
@@ -110,10 +119,11 @@ export function useFilters ({ products }: { products: ProductsData[] }) {
     clearFilters,
     hasActiveFilters,
     restoreScrollPosition,
+    uniqueCategories,
   }
 }
 
-export function useFilterValues () {
+export function useFilterValues ({ products }: { products: ProductsData[] }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -130,6 +140,15 @@ export function useFilterValues () {
     category: searchParams.get('category') || '',
     maxPrice: searchParams.get('maxPrice') || '',
   }), [localSearch, searchParams])
+
+  const uniqueCategories = useMemo(() => {
+    const seen = new Set<string>()
+    return products.filter(p => {
+      if (seen.has(p.category)) return false
+      seen.add(p.category)
+      return true
+    }).map(p => p.category)
+  }, [products])
 
   const setFilter = useCallback((key: string, value: string) => {
     if (key === 'search') {
@@ -189,5 +208,6 @@ export function useFilterValues () {
     setFilter,
     clearFilters,
     hasActiveFilters,
+    uniqueCategories,
   }
 }

@@ -256,9 +256,15 @@
   letter-spacing: 0.02em;
 }
 
-.buyBtn:hover {
+.buyBtn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+}
+
+.buyBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .buyBtn:focus-visible {

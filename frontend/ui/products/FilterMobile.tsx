@@ -3,16 +3,20 @@
 import { useState } from 'react';
 import FilterDrawer from './FilterDrawer';
 import FilterToggle from './FilterToggle';
-import styles from './FilterMobile.module.css';
+import { ProductsData } from '@/types/strapiApiResponses';
 
-export default function FilterMobile() {
+interface FilterMobileProps {
+  products: ProductsData[] | null;
+}
+
+export default function FilterMobile({ products }: FilterMobileProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <>
       <FilterToggle onClick={() => setDrawerOpen(true)} />
       {drawerOpen && (
-        <FilterDrawer onClose={() => setDrawerOpen(false)} />
+        <FilterDrawer products={products} onClose={() => setDrawerOpen(false)} />
       )}
     </>
   );

@@ -6,7 +6,9 @@ import { getProductData } from '@/services/getComponentsFromStrapi'
 export default async function ProductDetailPage ({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const products = await getProductData()
-  const product = products?.find((p) => p.slug === id)
+  const product = products?.find((p) => 
+    p.variants.some((v) => v.slug === id)
+  )
 
   if (!product) {
     notFound()
