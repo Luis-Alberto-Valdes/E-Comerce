@@ -87,3 +87,10 @@ frontend/next-env.d.ts
 .continue/
 .opencode/
 skills-lock.json
+
+# Playwright
+test-results/
+playwright-report/
+playwright-report/
+blob-report/
+.playwright/
