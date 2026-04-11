@@ -2,8 +2,8 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useState, useMemo } from 'react'
-import { useCartStore } from '@/context/CartContext'
+import { useState, type ChangeEvent } from 'react'
+import { useCartStore } from '@/context/cartStore'
 import styles from './page.module.css'
 import { ProductsData, Variants } from '@/types/strapiApiResponses'
 
@@ -12,39 +12,29 @@ interface ProductoProps {
 }
 
 export default function Producto ({ product }: ProductoProps) {
-  const [selectedColor, setSelectedColor] = useState(product.variants[0].color)
-  const [selectedSize, setSelectedSize] = useState<string | null>(product.variants[0].size || null)
+  const firstVariant = product.variants[0]
+  const [selectedColor, setSelectedColor] = useState(firstVariant?.color ?? '')
+  const [selectedSize, setSelectedSize] = useState<string | null>(firstVariant?.size || null)
   const [loading, setLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
   const addItem = useCartStore(state => state.addItem)
 
-  const productSlug = product.variants[0]?.slug || product.title.toLowerCase().replace(/\s+/g, '-')
+  const productSlug = firstVariant?.slug || product.title.toLowerCase().replace(/\s+/g, '-')
 
-  const uniqueColors = useMemo(() => {
-    const seen = new Set<string>()
-    return product.variants.filter(v => {
-      if (seen.has(v.color)) return false
-      seen.add(v.color)
-      return true
-    })
-  }, [product.variants])
+  const uniqueColors = product.variants.filter((v, i, arr) => arr.findIndex(v2 => v2.color === v.color) === i)
 
-  const uniqueSizes = useMemo(() => {
-    return product.variants
-      .filter(v => v.color === selectedColor && v.size)
-      .map(v => v.size!)
-      .filter((size, index, arr) => arr.indexOf(size) === index)
-  }, [product.variants, selectedColor])
+  const uniqueSizes = product.variants
+    .filter(v => v.color === selectedColor && v.size)
+    .map(v => v.size!)
+    .filter((size, index, arr) => arr.indexOf(size) === index)
 
-  const imageVariant = useMemo(() => {
-    return product.variants.find(v => v.color === selectedColor) || product.variants[0]
-  }, [product.variants, selectedColor])
+  const imageVariant = product.variants.find(v => v.color === selectedColor) || firstVariant
 
-  const cartVariant = useMemo(() => {
-    return product.variants.find(v => v.color === selectedColor && v.size === selectedSize) || product.variants.find(v => v.color === selectedColor) || product.variants[0]
-  }, [product.variants, selectedColor, selectedSize])
+  const cartVariant = product.variants.find(v => v.color === selectedColor && v.size === selectedSize) || product.variants.find(v => v.color === selectedColor) || firstVariant
 
-  const handleColorChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  if (!firstVariant) return null
+
+  const handleColorChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const newColor = event.target.value
     setSelectedColor(newColor)
     const sizesForColor = product.variants.filter(v => v.color === newColor && v.size).map(v => v.size!)
@@ -54,13 +44,13 @@ export default function Producto ({ product }: ProductoProps) {
     setLoading(true)
   }
 
-  const handleSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSizeChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setSelectedSize(event.target.value)
   }
 
   const handleAddToCart = () => {
     if (isAdding) return
-    
+
     setIsAdding(true)
     addItem({
       slug: productSlug,
@@ -70,7 +60,7 @@ export default function Producto ({ product }: ProductoProps) {
       variant: cartVariant,
       image: cartVariant.image
     })
-    
+
     setTimeout(() => setIsAdding(false), 600)
   }
 
@@ -98,8 +88,9 @@ export default function Producto ({ product }: ProductoProps) {
 
           <div className={styles.options}>
             <div className={styles.optionGroup}>
-              <label className={styles.optionLabel}>Color:</label>
+              <label htmlFor='color-select' className={styles.optionLabel}>Color:</label>
               <select
+                id='color-select'
                 onChange={handleColorChange}
                 className={styles.colorOptions}
                 value={selectedColor}
@@ -112,8 +103,9 @@ export default function Producto ({ product }: ProductoProps) {
 
             {uniqueSizes.length > 0 && (
               <div className={styles.optionGroup}>
-                <label className={styles.optionLabel}>Talla:</label>
+                <label htmlFor='size-select' className={styles.optionLabel}>Talla:</label>
                 <select
+                  id='size-select'
                   onChange={handleSizeChange}
                   className={styles.sizeOptions}
                   value={selectedSize || ''}
@@ -127,8 +119,9 @@ export default function Producto ({ product }: ProductoProps) {
             )}
           </div>
 
-          <button 
-            onClick={handleAddToCart} 
+          <button
+            type='button'
+            onClick={handleAddToCart}
             className={styles.button}
             disabled={isAdding}
           >

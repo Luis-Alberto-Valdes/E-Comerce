@@ -3,43 +3,33 @@ import Image from 'next/image'
 import styles from './Product.module.css'
 import Link from 'next/link'
 import { ProductsData, Variants } from '@/types/strapiApiResponses'
-import { useCartStore } from '@/context/CartContext'
-import React, { useState, useMemo } from 'react'
+import { useCartStore } from '@/context/cartStore'
+import { useState, type ChangeEvent } from 'react'
 
 export default function Producto ({ props }: { props: ProductsData }) {
   const { title, price, description, category, variants } = props
-  const productSlug = variants[0]?.slug || title.toLowerCase().replace(/\s+/g, '-')
-  const [selectedColor, setSelectedColor] = useState(variants[0].color)
-  const [selectedSize, setSelectedSize] = useState<string | null>(variants[0].size || null)
+  const firstVariant = variants[0]
+  const productSlug = firstVariant?.slug || title.toLowerCase().replace(/\s+/g, '-')
+  const [selectedColor, setSelectedColor] = useState(firstVariant?.color ?? '')
+  const [selectedSize, setSelectedSize] = useState<string | null>(firstVariant?.size || null)
   const [loading, setLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
   const addItem = useCartStore(state => state.addItem)
 
-  const uniqueColors = useMemo(() => {
-    const seen = new Set<string>()
-    return variants.filter(v => {
-      if (seen.has(v.color)) return false
-      seen.add(v.color)
-      return true
-    })
-  }, [variants])
+  const uniqueColors = variants.filter((v, i, arr) => arr.findIndex(v2 => v2.color === v.color) === i)
 
-  const uniqueSizes = useMemo(() => {
-    return variants
-      .filter(v => v.color === selectedColor && v.size)
-      .map(v => v.size!)
-      .filter((size, index, arr) => arr.indexOf(size) === index)
-  }, [variants, selectedColor])
+  const uniqueSizes = variants
+    .filter(v => v.color === selectedColor && v.size)
+    .map(v => v.size!)
+    .filter((size, index, arr) => arr.indexOf(size) === index)
 
-  const imageVariant = useMemo(() => {
-    return variants.find(v => v.color === selectedColor) || variants[0]
-  }, [variants, selectedColor])
+  const imageVariant = variants.find(v => v.color === selectedColor) || firstVariant
 
-  const cartVariant = useMemo(() => {
-    return variants.find(v => v.color === selectedColor && v.size === selectedSize) || variants.find(v => v.color === selectedColor) || variants[0]
-  }, [variants, selectedColor, selectedSize])
+  const cartVariant = variants.find(v => v.color === selectedColor && v.size === selectedSize) || variants.find(v => v.color === selectedColor) || firstVariant
 
-  const handleColorChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  if (!firstVariant) return null
+
+  const handleColorChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const newColor = event.target.value
     setSelectedColor(newColor)
     const sizesForColor = variants.filter(v => v.color === newColor && v.size).map(v => v.size!)
@@ -49,7 +39,7 @@ export default function Producto ({ props }: { props: ProductsData }) {
     setLoading(true)
   }
 
-  const handleSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSizeChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setSelectedSize(event.target.value)
   }
 
@@ -81,7 +71,6 @@ export default function Producto ({ props }: { props: ProductsData }) {
             className={styles.productImage}
             style={{ objectFit: 'contain', opacity: loading ? 0 : 1 }}
             onLoad={() => setLoading(false)}
-            priority
           />
         </div>
       </Link>

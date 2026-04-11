@@ -2,18 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useCartStore } from '@/context/CartContext'
+import { useCartStore } from '@/context/cartStore'
 import styles from './cartIcon.module.css'
-import { useEffect, useState } from 'react'
 
 export default function CartIcon () {
-  const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
   const totalItems = useCartStore(state => state.getTotalItems())
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const href = pathname === '/cart' ? '/products' : '/cart'
 
@@ -35,7 +29,7 @@ export default function CartIcon () {
         <circle cx='20' cy='21' r='1' />
         <path d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6' />
       </svg>
-      {mounted && totalItems > 0 && (
+      {totalItems > 0 && (
         <span className={styles.badge}>{totalItems}</span>
       )}
     </Link>

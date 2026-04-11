@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import FilterDrawer from './FilterDrawer';
-import FilterToggle from './FilterToggle';
-import { ProductsData } from '@/types/strapiApiResponses';
+import { useState } from 'react'
+import FilterDrawer from './FilterDrawer'
+import FilterToggle from './FilterToggle'
+import { ProductsData } from '@/types/strapiApiResponses'
 
 interface FilterMobileProps {
-  products: ProductsData[] | null;
+  products: ProductsData[] | null
 }
 
-export default function FilterMobile({ products }: FilterMobileProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+export default function FilterMobile ({ products }: FilterMobileProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
     <>
@@ -19,5 +19,5 @@ export default function FilterMobile({ products }: FilterMobileProps) {
         <FilterDrawer products={products} onClose={() => setDrawerOpen(false)} />
       )}
     </>
-  );
+  )
 }

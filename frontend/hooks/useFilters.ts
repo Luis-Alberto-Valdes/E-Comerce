@@ -1,30 +1,59 @@
 'use client'
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import { useCallback, useMemo, useRef, useState, useEffect } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { filterProducts, ProductFilters } from '@/lib/products'
 import { ProductsData } from '@/types/strapiApiResponses'
 
 const SCROLL_POSITION_KEY = 'products_scroll_position'
-const DEBOUNCE_DELAY = 100
+const DEBOUNCE_DELAY = 300
+
+function updateURL ({
+  key,
+  value,
+  searchParams,
+  pathname,
+  router
+}: {
+  key: string
+  value: string
+  searchParams: URLSearchParams
+  pathname: string
+  router: ReturnType<typeof useRouter>
+}) {
+  if (typeof window === 'undefined') return
+
+  const scrollPosition = window.scrollY
+  sessionStorage.setItem(SCROLL_POSITION_KEY, String(scrollPosition))
+
+  const params = new URLSearchParams(searchParams.toString())
+  if (value) {
+    params.set(key, value)
+  } else {
+    params.delete(key)
+  }
+
+  const queryString = params.toString()
+  router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false })
+}
 
 export function useFilters ({ products }: { products: ProductsData[] }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
-  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const [localSearch, setLocalSearch] = useState('')
+  const [localSearch, setLocalSearch] = useState(() => searchParams.get('search') || '')
 
-  useEffect(() => {
-    setLocalSearch(searchParams.get('search') || '')
-  }, [searchParams])
+  const urlSearchValue = searchParams.get('search') || ''
+  const categoryValue = searchParams.get('category') || ''
+  const maxPriceValue = searchParams.get('maxPrice') || ''
 
   const filters = useMemo((): ProductFilters => ({
-    search: localSearch,
-    category: searchParams.get('category') || '',
-    maxPrice: searchParams.get('maxPrice') || '',
-  }), [localSearch, searchParams])
+    search: urlSearchValue,
+    category: categoryValue,
+    maxPrice: maxPriceValue,
+  }), [urlSearchValue, categoryValue, maxPriceValue])
 
   const filteredProducts = useMemo(() => {
     if (!products) return []
@@ -32,46 +61,17 @@ export function useFilters ({ products }: { products: ProductsData[] }) {
   }, [products, filters])
 
   const setFilter = useCallback((key: string, value: string) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
+
     if (key === 'search') {
       setLocalSearch(value)
-
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current)
-      }
-
       debounceRef.current = setTimeout(() => {
-        if (typeof window === 'undefined') return
-        const scrollPosition = window.scrollY
-        sessionStorage.setItem(SCROLL_POSITION_KEY, String(scrollPosition))
-
-        const params = new URLSearchParams(searchParams.toString())
-        if (value) {
-          params.set('search', value)
-        } else {
-          params.delete('search')
-        }
-
-        const queryString = params.toString()
-        router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false })
+        updateURL({ key, value, searchParams, pathname, router })
       }, DEBOUNCE_DELAY)
     } else {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current)
-      }
-
-      if (typeof window === 'undefined') return
-      const scrollPosition = window.scrollY
-      sessionStorage.setItem(SCROLL_POSITION_KEY, String(scrollPosition))
-
-      const params = new URLSearchParams(searchParams.toString())
-      if (value) {
-        params.set(key, value)
-      } else {
-        params.delete(key)
-      }
-
-      const queryString = params.toString()
-      router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false })
+      updateURL({ key, value, searchParams, pathname, router })
     }
   }, [searchParams, pathname, router])
 
@@ -101,7 +101,7 @@ export function useFilters ({ products }: { products: ProductsData[] }) {
     }
   }, [])
 
-  const hasActiveFilters = Object.values(filters).some(v => v !== '')
+  const hasActiveFilters = urlSearchValue !== '' || categoryValue !== '' || maxPriceValue !== ''
 
   const uniqueCategories = useMemo(() => {
     const seen = new Set<string>()
@@ -115,6 +115,7 @@ export function useFilters ({ products }: { products: ProductsData[] }) {
   return {
     filters,
     filteredProducts,
+    localSearch,
     setFilter,
     clearFilters,
     hasActiveFilters,
@@ -123,91 +124,4 @@ export function useFilters ({ products }: { products: ProductsData[] }) {
   }
 }
 
-export function useFilterValues ({ products }: { products: ProductsData[] }) {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const pathname = usePathname()
-  const debounceRef = useRef<NodeJS.Timeout | null>(null)
-
-  const [localSearch, setLocalSearch] = useState('')
-
-  useEffect(() => {
-    setLocalSearch(searchParams.get('search') || '')
-  }, [searchParams])
-
-  const filters = useMemo((): ProductFilters => ({
-    search: localSearch,
-    category: searchParams.get('category') || '',
-    maxPrice: searchParams.get('maxPrice') || '',
-  }), [localSearch, searchParams])
-
-  const uniqueCategories = useMemo(() => {
-    const seen = new Set<string>()
-    return products.filter(p => {
-      if (seen.has(p.category)) return false
-      seen.add(p.category)
-      return true
-    }).map(p => p.category)
-  }, [products])
-
-  const setFilter = useCallback((key: string, value: string) => {
-    if (key === 'search') {
-      setLocalSearch(value)
-
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current)
-      }
-
-      debounceRef.current = setTimeout(() => {
-        if (typeof window === 'undefined') return
-
-        const params = new URLSearchParams(searchParams.toString())
-        if (value) {
-          params.set('search', value)
-        } else {
-          params.delete('search')
-        }
-
-        const queryString = params.toString()
-        router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false })
-      }, DEBOUNCE_DELAY)
-    } else {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current)
-      }
-
-      if (typeof window === 'undefined') return
-
-      const params = new URLSearchParams(searchParams.toString())
-      if (value) {
-        params.set(key, value)
-      } else {
-        params.delete(key)
-      }
-
-      const queryString = params.toString()
-      router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false })
-    }
-  }, [searchParams, pathname, router])
-
-  const clearFilters = useCallback(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current)
-    }
-
-    setLocalSearch('')
-
-    if (typeof window === 'undefined') return
-    router.push(pathname, { scroll: false })
-  }, [pathname, router])
-
-  const hasActiveFilters = Object.values(filters).some(v => v !== '')
-
-  return {
-    filters,
-    setFilter,
-    clearFilters,
-    hasActiveFilters,
-    uniqueCategories,
-  }
-}
+export { useFilters as useFilterValues }

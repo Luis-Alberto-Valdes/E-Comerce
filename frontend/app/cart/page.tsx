@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useCartStore } from '@/context/CartContext'
+import { useCartStore } from '@/context/cartStore'
 import { useState } from 'react'
 import styles from './page.module.css'
 
@@ -12,6 +12,7 @@ export default function CartPage () {
   const updateQuantity = useCartStore(state => state.updateQuantity)
   const clearCart = useCartStore(state => state.clearCart)
   const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
   const totalItems = items.reduce((total, item) => total + item.quantity, 0)
   const totalPrice = items.reduce((total, item) => total + (item.price * item.quantity), 0)
@@ -20,16 +21,12 @@ export default function CartPage () {
 
   const handleCheckout = async () => {
     setIsCheckingOut(true)
+    setCheckoutError(null)
     try {
-      console.log('=== CLIENT CHECKOUT START ===')
-      console.log('Cart items:', JSON.stringify(items, null, 2))
-
       const lineItems = items.map(item => ({
         variantId: item.variant.slug,
         quantity: item.quantity,
       }))
-
-      console.log('Line items to send:', JSON.stringify(lineItems, null, 2))
 
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -37,20 +34,16 @@ export default function CartPage () {
         body: JSON.stringify({ lineItems }),
       })
 
-      console.log('Response status:', res.status)
-
       const data = await res.json()
-      console.log('Response data:', JSON.stringify(data, null, 2))
 
       if (!res.ok) {
         throw new Error(data.error || 'Error al crear el checkout')
       }
 
-      console.log('Opening invoice in new tab:', data.invoiceUrl)
       window.open(data.invoiceUrl, '_blank')
       setIsCheckingOut(false)
-    } catch (error) {
-      console.error('Checkout error:', error)
+    } catch (_error) {
+      setCheckoutError('No se pudo procesar el pago. Inténtalo de nuevo.')
       setIsCheckingOut(false)
     }
   }
@@ -160,6 +153,12 @@ export default function CartPage () {
               <span className={styles.summaryValue}>{formatPrice(totalPrice)}</span>
             </div>
 
+            {checkoutError && (
+              <div className={styles.checkoutError} role='alert'>
+                {checkoutError}
+              </div>
+            )}
+
             <div className={styles.summaryActions}>
               <button
                 type='button'
@@ -168,8 +167,8 @@ export default function CartPage () {
               >
                 Limpiar carrito
               </button>
-              <button 
-                type='button' 
+              <button
+                type='button'
                 className={styles.buyBtn}
                 onClick={handleCheckout}
                 disabled={isCheckingOut}

@@ -1,7 +1,22 @@
-const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
-const storefrontAccessToken = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
+const domain = process.env.SHOPIFY_STORE_DOMAIN
+const storefrontAccessToken = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN
 
-export async function shopifyFetch ({ query, variables }) {
+interface ShopifyResponse<T> {
+  data: T
+  errors?: { message: string }[]
+}
+
+export async function shopifyFetch<T = Record<string, unknown>> ({
+  query,
+  variables,
+}: {
+  query: string
+  variables?: Record<string, unknown>
+}): Promise<ShopifyResponse<T>> {
+  if (!domain || !storefrontAccessToken) {
+    throw new Error('Shopify configuration is missing')
+  }
+
   const endpoint = `https://${domain}/api/2024-01/graphql.json`
 
   const res = await fetch(endpoint, {
@@ -17,7 +32,7 @@ export async function shopifyFetch ({ query, variables }) {
     throw new Error('Error al conectar con Shopify')
   }
 
-  return res.json()
+  return res.json() as Promise<ShopifyResponse<T>>
 }
 
 interface CheckoutLineItem {

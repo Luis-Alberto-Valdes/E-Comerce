@@ -452,9 +452,7 @@ export interface ApiBarraDeNavegacionBarraDeNavegacion
     > &
       Schema.Attribute.Private;
     logo: Schema.Attribute.Blocks;
-    loguearse: Schema.Attribute.Component<'navegacion.boton', false>;
     publishedAt: Schema.Attribute.DateTime;
-    registrarce: Schema.Attribute.Component<'navegacion.boton', false>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

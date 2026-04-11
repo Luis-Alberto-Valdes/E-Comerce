@@ -1,20 +1,15 @@
 import { Suspense } from 'react'
+import type { Metadata } from 'next'
 import FilterSidebar from '@/ui/products/FilterSidebar'
-import FilterMobile from '@/ui/products/FilterMobile'
 import FilterSkeleton from '@/ui/products/FilterSkeleton'
 import ProductSkeleton from '@/ui/products/ProductSkeleton'
 import ProductGrid from '../../ui/products/ProductGrid'
 import { getProductData } from '@/services/getComponentsFromStrapi'
 import styles from './page.module.css'
 
-function MobileFilterHeader () {
-  return (
-    <div className={styles.mobileHeader}>
-      <Suspense fallback={<div className={styles.filterTogglePlaceholder} />}>
-        <FilterMobile />
-      </Suspense>
-    </div>
-  )
+export const metadata: Metadata = {
+  title: 'Productos',
+  description: 'Explora nuestra colección de productos con filtros avanzados por categoría y precio.',
 }
 
 export default async function ProductsPage () {
@@ -23,8 +18,7 @@ export default async function ProductsPage () {
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
-        <h2>Productos</h2>
-        <p>Explora nuestra colección curada con un diseño moderno.</p>
+        <h2>Explora nuestra colección curada con un diseño moderno.</h2>
       </section>
 
       <div className={styles.content}>

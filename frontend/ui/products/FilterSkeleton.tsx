@@ -1,6 +1,6 @@
-import styles from './FilterSkeleton.module.css';
+import styles from './FilterSkeleton.module.css'
 
-export default function FilterSkeleton() {
+export default function FilterSkeleton () {
   return (
     <aside className={styles.skeleton}>
       <div className={styles.header}>
@@ -26,5 +26,5 @@ export default function FilterSkeleton() {
         </div>
       </div>
     </aside>
-  );
+  )
 }

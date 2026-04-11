@@ -13,16 +13,6 @@
   "attributes": {
     "logo": {
       "type": "blocks"
-    },
-    "registrarce": {
-      "type": "component",
-      "component": "navegacion.boton",
-      "repeatable": false
-    },
-    "loguearse": {
-      "type": "component",
-      "component": "navegacion.boton",
-      "repeatable": false
     }
   }
 }

@@ -1,11 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
-
 :root {
   --font-inter: 'Inter', sans-serif;
-  --font-poppins: 'Poppins', sans-serif;
-  --font-lato: 'Lato', sans-serif;
 }
 
 body {
@@ -15,8 +9,6 @@ body {
 }
 
 .font-inter { font-family: var(--font-inter); }
-.font-poppins { font-family: var(--font-poppins); }
-.font-lato { font-family: var(--font-lato); }
 
 *{
   box-sizing: border-box;

@@ -1,9 +1,9 @@
 import { ProductsData } from '@/types/strapiApiResponses'
 
 export interface ProductFilters {
-  search?: string;
-  category?: string;
-  maxPrice?: string;
+  search?: string
+  category?: string
+  maxPrice?: string
 }
 
 export function filterProducts (products: ProductsData[], filters: ProductFilters): ProductsData[] {
@@ -18,7 +18,9 @@ export function filterProducts (products: ProductsData[], filters: ProductFilter
   if (filters.search) {
     const searchTerm = filters.search.toLowerCase()
     filtered = filtered.filter(p =>
-      p.title.toLowerCase().includes(searchTerm)
+      p.title.toLowerCase().includes(searchTerm) ||
+      p.description.toLowerCase().includes(searchTerm) ||
+      p.category.toLowerCase().includes(searchTerm)
     )
   }
 
