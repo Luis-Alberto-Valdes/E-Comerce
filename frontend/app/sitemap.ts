@@ -1,11 +1,13 @@
 import type { MetadataRoute } from 'next'
 import { getProductData } from '@/services/getComponentsFromStrapi'
 
+const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
+
 export default async function sitemap (): Promise<MetadataRoute.Sitemap> {
   const products = await getProductData()
 
   const productUrls = products?.map((product) => ({
-    url: `https://tu-dominio.com/products/${product.variants[0]?.slug || product.title.toLowerCase().replace(/\s+/g, '-')}`,
+    url: `${DOMAIN}/products/${product.variants[0]?.slug || product.title.toLowerCase().replace(/\s+/g, '-')}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.8,
@@ -13,13 +15,13 @@ export default async function sitemap (): Promise<MetadataRoute.Sitemap> {
 
   return [
     {
-      url: 'https://tu-dominio.com',
+      url: DOMAIN,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 1,
     },
     {
-      url: 'https://tu-dominio.com/products',
+      url: `${DOMAIN}/products`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,

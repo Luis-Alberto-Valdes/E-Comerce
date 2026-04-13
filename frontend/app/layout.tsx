@@ -16,6 +16,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'),
   title: {
     default: 'E-Commerce Store',
     template: '%s | E-Commerce Store',
@@ -31,13 +32,9 @@ export const metadata: Metadata = {
       template: '%s | E-Commerce Store',
     },
     description: 'Explora nuestra colección curada con un diseño moderno.',
-    url: 'https://tu-dominio.com',
     siteName: 'E-Commerce Store',
     locale: 'es_ES',
     type: 'website',
-  },
-  alternates: {
-    canonical: 'https://tu-dominio.com',
   },
 }
 

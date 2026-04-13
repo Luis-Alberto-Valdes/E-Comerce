@@ -80,6 +80,7 @@ frontend/next-env.d.ts
 *.md
 !frontend/README.md
 !backend/README.md
+Nuevo documento de texto.txt
 
 # AI Agent Skills (local only)
 .agents/
