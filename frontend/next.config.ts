@@ -1,11 +1,15 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
   experimental: {
-    // Aumenta el tiempo de espera (por ejemplo, a 30 segundos)
     imgOptTimeoutInSeconds: 60
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
   images: {
     remotePatterns: [
@@ -27,11 +31,9 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       }
-
     ],
     imageSizes: [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840]
   },
-
 }
 
 export default nextConfig

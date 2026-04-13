@@ -40,6 +40,11 @@ interface CheckoutLineItem {
   quantity: number
 }
 
+interface CheckoutCreateResponse {
+  checkout: unknown
+  checkoutUserErrors: Array<{ message: string }>
+}
+
 export async function createCheckout (lineItems: CheckoutLineItem[]) {
   const query = `
     mutation checkoutCreate($input: CheckoutCreateInput!) {
@@ -82,14 +87,14 @@ export async function createCheckout (lineItems: CheckoutLineItem[]) {
     },
   }
 
-  const result = await shopifyFetch({ query, variables })
+  const result = await shopifyFetch<CheckoutCreateResponse>({ query, variables })
 
   if (!result.data?.checkoutCreate) {
     throw new Error('No se pudo crear el checkout. Respuesta inesperada de Shopify.')
   }
 
-  if (result.data.checkoutCreate.checkoutUserErrors?.length > 0) {
-    throw new Error(result.data.checkoutCreate.checkoutUserErrors.map((e: { message: string }) => e.message).join(', '))
+  if (result.data?.checkoutCreate?.checkoutUserErrors?.length > 0) {
+    throw new Error(result.data.checkoutCreate.checkoutUserErrors.map((e) => e.message).join(', '))
   }
 
   return result.data.checkoutCreate.checkout
