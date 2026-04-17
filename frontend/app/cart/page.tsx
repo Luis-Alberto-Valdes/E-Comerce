@@ -73,7 +73,7 @@ export default function CartPage () {
   }
 
   return (
-    <main className={styles.page}>
+    <main className={styles.page} suppressHydrationWarning>
       <div className={styles.container}>
         <header className={styles.header}>
           <h1>Carrito de Compras</h1>

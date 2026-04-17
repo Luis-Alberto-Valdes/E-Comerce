@@ -13,6 +13,18 @@ export type NavBarData = {
   text: string
 }
 
+export type ProductsData = {
+  title: string
+  price: number
+  description: string
+  category: string
+  variants: Variants[]
+}
+
+export type NavBarData = {
+  text: string
+}
+
 export type Variants = {
   slug: string
   image: string

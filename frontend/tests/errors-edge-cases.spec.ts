@@ -1,5 +1,5 @@
 // @ts-check
-const { test, expect } = require('@playwright/test')
+import { test, expect } from '@playwright/test'
 
 test.describe('Error Handling & Edge Cases', () => {
   test('error boundary displays on error', async ({ page }) => {
@@ -34,8 +34,11 @@ test.describe('Error Handling & Edge Cases', () => {
   test('filters show all categories from Strapi', async ({ page }) => {
     await page.goto('/products')
 
-    const radios = page.getByRole('radio')
-    const count = await radios.count()
+    // Wait for radio buttons to be loaded before counting
+    const buttons = page.locator('[class*="radio"]')
+    await buttons.first().waitFor({ state: 'visible' })
+
+    const count = await buttons.count()
     expect(count).toBeGreaterThan(0)
   })
 })

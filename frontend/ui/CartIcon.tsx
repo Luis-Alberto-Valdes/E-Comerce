@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCartStore } from '@/context/cartStore'
@@ -7,12 +8,17 @@ import styles from './cartIcon.module.css'
 
 export default function CartIcon () {
   const pathname = usePathname()
-  const totalItems = useCartStore(state => state.getTotalItems())
+  const storeTotalItems = useCartStore(state => state.getTotalItems())
+  const [totalItems, setTotalItems] = useState(0)
+
+  useEffect(() => {
+    setTotalItems(storeTotalItems)
+  }, [storeTotalItems])
 
   const href = pathname === '/cart' ? '/products' : '/cart'
 
   return (
-    <Link href={href} className={styles.cartLink}>
+    <Link href={href} className={styles.cartLink} suppressHydrationWarning>
       <svg
         xmlns='http://www.w3.org/2000/svg'
         width='24'
@@ -30,7 +36,7 @@ export default function CartIcon () {
         <path d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6' />
       </svg>
       {totalItems > 0 && (
-        <span className={styles.badge}>{totalItems}</span>
+        <span className={styles.badge} suppressHydrationWarning>{totalItems}</span>
       )}
     </Link>
   )

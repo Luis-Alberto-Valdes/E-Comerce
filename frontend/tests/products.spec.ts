@@ -46,7 +46,10 @@ test.describe('Products Page', () => {
   test('product grid displays products', async ({ page }) => {
     await page.goto('/products')
 
+    // Wait for product items to load before counting
     const products = page.locator('[class*="productItem"]')
+    await products.first().waitFor({ state: 'visible' })
+
     const count = await products.count()
     expect(count).toBeGreaterThan(0)
   })

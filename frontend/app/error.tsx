@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function Error ({
   error,
@@ -9,9 +9,23 @@ export default function Error ({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const [lastUrl, setLastUrl] = useState('')
+
+  useEffect(() => {
+    setLastUrl(window.location.href)
+  }, [])
+
   useEffect(() => {
     // Log error to monitoring service in production
   }, [error])
+
+  const handleRetry = () => {
+    if (reset) {
+      reset()
+    } else {
+      window.location.reload()
+    }
+  }
 
   return (
     <div
@@ -31,7 +45,7 @@ export default function Error ({
       </p>
       <button
         type='button'
-        onClick={reset}
+        onClick={handleRetry}
         style={{
           padding: '0.75rem 1.5rem',
           backgroundColor: '#000',

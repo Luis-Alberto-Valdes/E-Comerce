@@ -1,4 +1,7 @@
 name: Frontend Tests (Playwright)
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches: [ main, master ]
@@ -32,12 +35,24 @@ jobs:
 
       - name: Build Frontend
         run: cd frontend && npm run build
+        env:
+          STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+          STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+          NEXT_PUBLIC_DOMAIN: ${{ secrets.BASE_URL }}
+          SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+          SHOPIFY_STOREFRONT_ACCESS_TOKEN: ${{ secrets.SHOPIFY_STOREFRONT_ACCESS_TOKEN }}
+          SHOPIFY_API_ADMIN_ACCESS_TOKEN: ${{ secrets.SHOPIFY_API_ADMIN_ACCESS_TOKEN }}
 
       - name: Run Playwright tests
         run: cd frontend && npx playwright test
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
           CI: true
+          STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+          STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+          SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+          SHOPIFY_STOREFRONT_ACCESS_TOKEN: ${{ secrets.SHOPIFY_STOREFRONT_ACCESS_TOKEN }}
+          SHOPIFY_API_ADMIN_ACCESS_TOKEN: ${{ secrets.SHOPIFY_API_ADMIN_ACCESS_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -48,12 +63,11 @@ jobs:
 
       - name: Deploy to Netlify
         if: success()
-        uses: nwtgck/actions-netlify@v2.0
-        with:
-          publish-dir: './frontend/.next'
-          production-branch: master
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions - Tests passed"
+        run: |
+          cd frontend
+          npm install -g netlify-cli
+          netlify deploy --prod
+
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
