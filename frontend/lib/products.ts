@@ -19,7 +19,6 @@ export function filterProducts (products: ProductsData[], filters: ProductFilter
     const searchTerm = filters.search.toLowerCase()
     filtered = filtered.filter(p =>
       p.title.toLowerCase().includes(searchTerm) ||
-      p.description.toLowerCase().includes(searchTerm) ||
       p.category.toLowerCase().includes(searchTerm)
     )
   }

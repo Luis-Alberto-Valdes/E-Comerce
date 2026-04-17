@@ -143,11 +143,6 @@ export default function CartPage () {
               <span className={styles.summaryValue}>{formatPrice(totalPrice)}</span>
             </div>
 
-            <div className={styles.summaryRow}>
-              <span className={styles.summaryLabel}>Envío</span>
-              <span className={styles.summaryValue}>Calculado al checkout</span>
-            </div>
-
             <div className={styles.summaryTotal}>
               <span className={styles.summaryLabel}>Total</span>
               <span className={styles.summaryValue}>{formatPrice(totalPrice)}</span>
@@ -158,6 +153,10 @@ export default function CartPage () {
                 {checkoutError}
               </div>
             )}
+
+            <p className={styles.checkoutNote}>
+              Usa el número de tarjeta de prueba: <strong>1</strong>
+            </p>
 
             <div className={styles.summaryActions}>
               <button

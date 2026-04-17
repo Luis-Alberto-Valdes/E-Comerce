@@ -109,6 +109,9 @@
 .searchIcon {
   position: absolute;
   left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
   color: #6b7c93;
   pointer-events: none;
 }

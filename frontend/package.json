@@ -10,7 +10,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "next": "16.1.7",
+    "next": "^16.2.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "zod": "^4.3.6",
@@ -25,7 +25,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.7",
     "neostandard": "^0.13.0",
-    "uipro-cli": "^2.2.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "uipro-cli": "^2.2.3"
   }
 }

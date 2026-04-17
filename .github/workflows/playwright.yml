@@ -1,20 +1,12 @@
 name: Frontend Tests (Playwright)
-name: Frontend Tests (Playwright)
 on:
   push:
     branches: [ main, master ]
     paths:
       - 'frontend/**'
       - '.github/workflows/playwright.yml'
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/playwright.yml'
   pull_request:
     branches: [ main, master ]
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/playwright.yml'
-
     paths:
       - 'frontend/**'
       - '.github/workflows/playwright.yml'

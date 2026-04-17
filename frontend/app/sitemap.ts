@@ -5,7 +5,7 @@ const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
 export default async function sitemap (): Promise<MetadataRoute.Sitemap> {
   let products: Array<{ variants: Array<{ slug?: string }>; title: string }> | null = null
-  
+
   try {
     products = await getProductData()
   } catch {
