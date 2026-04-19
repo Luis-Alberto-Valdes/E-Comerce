@@ -1,61 +1,123 @@
-# 🚀 Getting started with Strapi
+# Backend Documentation
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
+## Visión general
 
-### `develop`
+El backend es una aplicación Strapi 5 que expone contenido headless y campos personalizados de Shopify.
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
+## Estructura de carpetas
 
-```
-npm run develop
-# or
-yarn develop
-```
+- `backend/src/api/`: APIs y content types.
+- `backend/config/`: configuración del servidor y base de datos.
+- `backend/package.json`: dependencias y scripts.
 
-### `start`
+## Modelos y contenido
 
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
+### `home`
+- Tipo: `singleType`
+- Campos:
+  - `titulo` (string)
+  - `description` (text)
+  - `productos` (component `navegacion.boton`)
+- Archivo: `backend/src/api/home/content-types/home/schema.json`
 
-```
-npm run start
-# or
-yarn start
-```
+### `barra-de-navegacion`
+- Tipo: `singleType`
+- Campos:
+  - `logo` (blocks)
+- Archivo: `backend/src/api/barra-de-navegacion/content-types/barra-de-navegacion/schema.json`
 
-### `build`
+### `product-shopify`
+- Tipo: `collectionType`
+- Campos:
+  - `product` (custom field `plugin::shopify.product`)
+- Archivo: `backend/src/api/product-shopify/content-types/product-shopify/schema.json`
 
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
+## APIs Strapi
 
-```
+Strapi genera routers, controllers y servicios básicos usando factories.
+
+- `backend/src/api/home/routes/home.ts`
+- `backend/src/api/barra-de-navegacion/routes/barra-de-navegacion.ts`
+- `backend/src/api/product-shopify/routes/product-shopify.ts`
+- `backend/src/api/product/routes/product.ts`
+
+### Customización
+
+Los services y controllers usan `factories.createCoreService` y `factories.createCoreController`.
+No hay lógica personalizada adicional dentro de los servicios cargados actualmente.
+
+## Configuración de Strapi
+
+### `backend/config/server.ts`
+- Host: `HOST` o `0.0.0.0`
+- Puerto: `PORT` o `1337`
+- Clave de aplicación `APP_KEYS`
+
+### `backend/config/database.ts`
+- Client configurable con `DATABASE_CLIENT`.
+- Soporta `sqlite`, `postgres` y `mysql`.
+- Variables adicionales usadas:
+  - `DATABASE_URL`
+  - `DATABASE_HOST`
+  - `DATABASE_PORT`
+  - `DATABASE_NAME`
+  - `DATABASE_USERNAME`
+  - `DATABASE_PASSWORD`
+  - `DATABASE_SSL`
+
+## Shopify
+
+El backend incorpora `@strapi-community/shopify` y define un custom field Shopify dentro del content-type `product-shopify`.
+
+Esto permite almacenar productos existentes de Shopify directamente en Strapi y exponerlos como contenido para el frontend.
+
+## Base de datos
+
+- Por defecto el backend puede usar `sqlite` con `backend/.tmp/data.db`.
+- La configuración es flexible y permite migrar a Postgres o MySQL.
+
+## Seguridad y permisos
+
+- Strapi puede usar `@strapi/plugin-users-permissions`.
+- El acceso del frontend a Strapi depende de `STRAPI_API_TOKEN`.
+- El checkout Shopify usa `SHOPIFY_API_ADMIN_ACCESS_TOKEN` desde el frontend server-side.
+
+## Despliegue
+
+### Comandos
+
+```bash
+cd backend
+npm install
+npm run dev
 npm run build
-# or
-yarn build
+npm run start
 ```
 
-## ⚙️ Deployment
+### Variables de entorno críticas
 
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
+| Variable | Descripción |
+|---|---|
+| `HOST` | Host Strapi |
+| `PORT` | Puerto de aplicación |
+| `APP_KEYS` | Claves secretas de Strapi |
+| `DATABASE_CLIENT` | Cliente DB (`sqlite`, `postgres`, `mysql`) |
+| `DATABASE_URL` | Cadena de conexión Postgres |
+| `DATABASE_HOST` | Host DB |
+| `DATABASE_PORT` | Puerto DB |
+| `DATABASE_NAME` | Nombre de la DB |
+| `DATABASE_USERNAME` | Usuario DB |
+| `DATABASE_PASSWORD` | Contraseña DB |
 
-```
-yarn strapi deploy
-```
+## Extensiones futuras
 
-## 📚 Learn more
+- Agregar un nuevo modelo Strapi en `backend/src/api/`.
+- Usar `plugin::shopify.product` para mapear más campos de Shopify.
+- Añadir lógica personalizada a controllers o servicios si se requiere business logic.
+- Ejecutar migraciones de contenido desde Strapi para mantener consistencia.
 
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
+## Good practices
 
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
-
-## ✨ Community
-
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
-
----
-
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+- Mantener `backend/config/database.ts` como única fuente de verdad para DB.
+- No mezclar lógica de negocio en `frontend` con los content types de Strapi.
+- Si se añade un nuevo content-type, exponerlo con un nuevo endpoint de Strapi y actualizar `frontend/services/getComponentsFromStrapi.ts`.
