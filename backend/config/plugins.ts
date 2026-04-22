@@ -6,7 +6,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
         config:{
            host:'https://test-shop-234576183295487458601.myshopify.com',
            encryptionKey: '12345678912345678912345678912345',
-           apiAccessToken:'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',
+           apiAccessToken:process.env.SHOPIFY_API_ACCESS_TOKEN,
            shopName:'test-shop-234576183295487458601.myshopify.com',
            variantFields: [
         'id',
